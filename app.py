@@ -1,10 +1,9 @@
 import gradio as gr
 import ollama
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.document_loaders import PyPDFLoader
 from pathlib import Path
+from create_vectorstore import CreateVector
 
 def vectordb(fileName):
     def file_exists_in_current_dir(file_name):
@@ -14,14 +13,11 @@ def vectordb(fileName):
 
     embeddings = OllamaEmbeddings(model="mistral")
 
-    if not file_exists_in_current_dir(fileName):
-        loader = PyPDFLoader(f"{fileName}.pdf", extract_images=True)
-        docs = loader.load_and_split()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        splits = text_splitter.split_documents(docs)
-        vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings,persist_directory=f"./{fileName}")
-    else:
-        vectorstore = Chroma(persist_directory=f"./{fileName}", embedding_function = embeddings)
+    if not file_exists_in_current_dir("dbs/"+fileName):
+        create_vector_instance = CreateVector()
+        create_vector_instance.CreateVectors(fileName=fileName, threadCount=100, modelName="mistral")
+    
+    vectorstore = Chroma(persist_directory=f"./dbs/{fileName}", embedding_function = embeddings)
 
     retriever = vectorstore.as_retriever()
     return retriever
@@ -50,4 +46,4 @@ ui = gr.Interface(
 )
 # result = rag_chain("Can Additional depreciation be claimed on second hand machinery?")
 # print(result)
-ui.launch(share=True)
+ui.launch()
