@@ -13,7 +13,7 @@ def vectordb(fileName):
 
     embeddings = OllamaEmbeddings(model="mistral")
 
-    if not file_exists_in_current_dir("dbs/"+fileName):
+    if not file_exists_in_current_dir(f"dbs/{fileName}"):
         create_vector_instance = CreateVector()
         create_vector_instance.CreateVectors(fileName=fileName, threadCount=100, modelName="mistral")
     
@@ -30,7 +30,6 @@ def ollama_llm(question, context):
     formatted_prompt = f"prompt: if answer is not available or have very less confidenece on the answer then return answer not in provided text \n\n Question: {question}\n\nContext: {context}"
     response = ollama.chat(model='mistral', messages=[{'role': 'user', 'content': formatted_prompt}])
     return response['message']['content']
-
 
 def rag_chain(question,fileName=None):
     if not fileName:
